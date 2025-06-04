@@ -44,16 +44,16 @@ def add_user():
     email = input("Enter user email: ")
 
     if get_user_by_email(email):
-        print(f'User already exists: {email}')
+        print(f"User already exists: {email}")
         return
 
     try:
         session.add(User(name=name, email=email))
         session.commit()
-        print(f'User {name} added!')
+        print(f"User {name} added!")
     except IntegrityError:
         session.rollback()
-        print('ERROR: Could not add user.')
+        print("ERROR: Could not add user.")
 
 def add_tasks():
     email = input("Enter the email of the user to add tasks: ")
@@ -71,17 +71,71 @@ def add_tasks():
     session.commit()
     print(f"Task '{title}' added for user {user.name}.")
 
-# Main Program Loop
+#Query
+def query_users():
+    for user in  session.query(User).all():
+        print(f"ID: {User.id}, Name: {user.name}, Email: {user.email}")
+
+def query_tasks():
+    email = input("Enter the email of the user for tasks:")
+    user  = get_user_by_email(email)
+    if not user:
+        print("There was no user with that email")
+        return
+    
+    for task in user.tasks:
+        print(f"Task ID: {task.id}, Title: {task.title}")
+
+
+def update_user():
+    email = input("Email of who you want to update:  ")
+    user = get_user_by_email(email)
+    if not user:
+        print("There is no user with that email")
+        return
+    
+    user.name = input("Enter a new name for the user (leave blank to stay the same):") or user.name
+    user.email = input("Enter a new email (leave blank to stay the same)") or user.email
+    session.commit()
+    print("User has been updated!")
+
+def delete_users():
+    email = input("Email of who you want to delete: ")
+    user  = get_user_by_email(email)
+    if not user:
+        print("There is no user with that email")
+        return
+    if confirm_action(f"Are you sure you want to delete: {user.name}?"):
+        session.delete(user)
+        session.commit()
+        print("user has been deleted!")
+
+def delete_task():
+    task_id = input("Enter the ID of the task to delete: ")        
+    task = session.query(Task).get(task_id)
+    if not task:
+        print("There is no task there!")
+        return
+    if confirm_action(f"Are you want to delete this task: {task.id}?"):
+     session.delete(tas)
+     session.commit()
+    print("Task has been deleted!")
+
+# Main Program Loopthis 
 def main() -> None:
     actions = {
         "1": add_user,
         "2": add_tasks,
+        "3": query_users,
+        "4": query_tasks,
+        "5": update_user,
+        "6": delete_users,
+        "7": delete_task
     }
 
     while True:
-        print("\nOptions:\n1. Add User\n2. Add Task\n8. Exit")
-        choice = input("Choose an option: ")
-
+        print("\nOptions:\n1. Add User\n2. Add Task\n3. Query Users\n4. Query Tasks\n5. Update Users\n6. Delete\n7. Delete Task\n8. Exit")
+        choice = input("Enter an option: ")
         if choice == "8":
             print("Adios!")
             break
